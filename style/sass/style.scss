@@ -1,0 +1,90 @@
+$transformScale: 1.5;
+$slideNum: (($transformScale - 1) / 2) * 100 + "%";
+$slideNumPercent: $slideNum + "%";
+$setDuration: 0.15s;
+
+.clearfix::after {
+    content: "";
+    display: table;
+    clear: both;
+}
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+body {
+    background: #141414;
+    padding: 25px;
+    overflow-x: hidden;
+    font-family: Helvetica, sans-serif;
+}
+
+img {
+    width: 100%;
+    display: inline-block;
+}
+
+.heading {
+    color: #fff;
+    font-size: 2.5rem;
+    margin-bottom: 1em;
+}
+
+.car {
+    position: relative;
+    display: block;
+    width: 100%;
+
+    &[data-carousel-hidden="true"] {
+        display: none;
+    }
+
+    &_row {
+        display: flex;
+        white-space: nowrap;
+    }
+    &_row,
+    &_item {
+        transition-property: top left right bottom transform width;
+        transition-duration: $setDuration;
+        transition-timing-function: linear;
+    }
+    &_item {
+        position: relative;
+        padding: 0 3px 1rem 3px;
+
+        /* default */
+        &:not[data-carousel-active="true"] {
+            transform: translateX(0) scale(1);
+        }
+        /* active state*/
+        &[data-carousel-active="true"] {
+            transform: translateX(0) scale($transformScale);
+        }
+        &[data-carousel-active="true"][data-carousel-type="first"] {
+            transform: translateX(calc(#{$slideNum})) scale($transformScale);
+        }
+        &[data-carousel-active="true"][data-carousel-type="last"] {
+            transform: translateX(calc(-#{$slideNum})) scale($transformScale);
+        }
+        /* inactive state */
+        &:not[data-carousel-active="true"] {
+            transform: translateX(0) scale(1);
+        }
+        &[data-carousel-move="left"] {
+            transform: translateX(calc(-#{$slideNum})) scale(1);
+        }
+        &[data-carousel-move="left-full"] {
+            transform: translateX(calc(-#{$slideNum} * 2)) scale(1);
+        }
+        &[data-carousel-move="right"] {
+            transform: translateX(calc(#{$slideNum})) scale(1);
+        }
+        &[data-carousel-move="right-full"] {
+            transform: translateX(calc(#{$slideNum} * 2)) scale(1);
+        }
+    }
+}
