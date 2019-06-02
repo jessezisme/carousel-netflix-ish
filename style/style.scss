@@ -1,7 +1,9 @@
 $transformScale: 1.5;
-$slideNum: (($transformScale - 1) / 2) * 100 + "%";
-$slideNumPercent: $slideNum + "%";
+$slideNum: (($transformScale - 1) / 2) * 100;
+$slideNumPercent: unquote($slideNum + "%");
+$slideNumDoublePercent: unquote(($slideNum * 2) + "%");
 $setDuration: 0.15s;
+
 
 .clearfix::after {
     content: "";
@@ -43,8 +45,12 @@ img {
     }
 
     &_row {
+        position: relative; 
         display: flex;
         white-space: nowrap;
+        transition-property: left right; 
+        transition-duration: .4s; 
+        transition-timing-function: ease-out; 
     }
     &_row,
     &_item {
@@ -53,6 +59,7 @@ img {
         transition-timing-function: linear;
     }
     &_item {
+        display: inline-block;
         position: relative;
         padding: 0 3px 1rem 3px;
 
@@ -65,26 +72,26 @@ img {
             transform: translateX(0) scale($transformScale);
         }
         &[data-carousel-active="true"][data-carousel-type="first"] {
-            transform: translateX(calc(#{$slideNum})) scale($transformScale);
+            transform: translateX($slideNumPercent) scale($transformScale);
         }
         &[data-carousel-active="true"][data-carousel-type="last"] {
-            transform: translateX(calc(-#{$slideNum})) scale($transformScale);
+            transform: translateX(-#{$slideNumPercent}) scale($transformScale);
         }
         /* inactive state */
         &:not[data-carousel-active="true"] {
             transform: translateX(0) scale(1);
         }
         &[data-carousel-move="left"] {
-            transform: translateX(calc(-#{$slideNum})) scale(1);
+            transform: translateX(-#{$slideNumPercent}) scale(1);
         }
         &[data-carousel-move="left-full"] {
-            transform: translateX(calc(-#{$slideNum} * 2)) scale(1);
+            transform: translateX(-#{$slideNumDoublePercent}) scale(1);
         }
         &[data-carousel-move="right"] {
-            transform: translateX(calc(#{$slideNum})) scale(1);
+            transform: translateX($slideNumPercent) scale(1);
         }
         &[data-carousel-move="right-full"] {
-            transform: translateX(calc(#{$slideNum} * 2)) scale(1);
+            transform: translateX($slideNumDoublePercent) scale(1);
         }
     }
 }

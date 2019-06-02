@@ -1,4 +1,4 @@
-function carousel(options) {
+function Carousel(options) {
     /**
      * -------------------------------------
      * Polyfills
@@ -77,18 +77,27 @@ function carousel(options) {
     /**
      *  /end helper functions
      */
-
     var options = options;
     var carouselSelector = options.selector;
     var elListCarousel = document.querySelectorAll(carouselSelector);
     var elListItems = document.querySelectorAll(carouselSelector + " .car_item");
 
-    /*
-     * Set item width
+    /**
+     * Update carousel and carousel items querySelector
      */
-    function setSize() {
+    function updateSelectors() {
+        elListCarousel = document.querySelectorAll(carouselSelector);
+        elListItems = document.querySelectorAll(carouselSelector + " .car_item");
+    }
+
+    /*
+     * Set item width:
+     * based on option row size
+     */
+    function setItemSize() {
         var getWidth = (1 / options.rowSize) * 100 + "%";
 
+        updateSelectors();
         if (elListItems) {
             Array.prototype.forEach.call(elListItems, function(el, index) {
                 el.style.width = getWidth;
@@ -96,12 +105,13 @@ function carousel(options) {
             });
         }
     }
+
     /*
      * Set item positioning:
      * this is needed to determine the 1st and Last items in the active carousel row;
      * these first/last items require different animations and affect previous/next elements positioning
      */
-    function setPosition() {
+    function setItemPosition() {
         // loop though all carousels and items
         Array.prototype.forEach.call(elListCarousel, function(el, index) {
             var indexRow;
@@ -126,13 +136,13 @@ function carousel(options) {
         });
     }
     /*
-     * Init items:
-     * Sets the width of elements based on row size set in options
+     * Set row size:
+     * sorts the row size options, if responsive option is used;
+     * checks for correct row-size based on viewport/options, and updates row-size option accordingly
      */
-    function initItems() {
-        var getWindowWidth = window.innerWidth;
+    function setRowSize() {
         var isResponsive = options.responsive ? true : false;
-        var responsiveItems;
+        var getRowSize;
 
         /*
            If custom responsive breakpoints are set, rather than a default for all sizes:
@@ -147,11 +157,17 @@ function carousel(options) {
             options.responsive.sort(function(a, b) {
                 return a.breakpoint - b.breakpoint;
             });
-            options.responsive.forEach(function(val, index, arr) {
-                if (getWindowWidth >= val.breakpoint) {
-                    options.rowSize = val.items;
+
+            for (var i = 0; i < options.responsive.length; i++) {
+                var getBreakpoint = options.responsive[i].breakpoint;
+                var getItems = options.responsive[i].items;
+                var matchMediaQuery = "(min-width: " + options.responsive[i].breakpoint + "px)";
+
+                if (window.matchMedia(matchMediaQuery).matches) {
+                    getRowSize = getItems;
                 }
-            });
+            }
+            options.rowSize = getRowSize;
         }
     }
 
@@ -229,52 +245,97 @@ function carousel(options) {
      * Event Listeners:
      *
      */
-    function resizeEvent(event) {
-        removeActiveItem();
-        initCarousel();
+    /*
+        Event Array:
+        holds an array of objects containing the references to the element, event-name, and callback for all added event listeners; 
+        this is used to subsequently remove all event listners; 
+    */
+    var eventArray = [];
+    /*
+        Add event listener: 
+        creates custom event object, pushes to event array; 
+        also applies the event-listeners
+    */
+    function addEventListener(getEl, getEventName, getCallback) {
+        var eventObj = {};
+        // build event object and push into event array for later removal if necessary
+        eventObj.el = getEl;
+        eventObj.eventName = getEventName;
+        eventObj.callback = getCallback;
+        eventArray.push(eventObj);
+        // add event to element
+        eventObj.el.addEventListener(eventObj.eventName, eventObj.callback);
     }
+    /*
+        Remove event listners:
+        removes all event listners from the event array 
+    */
+    function removeAllEventListeners() {
+        eventArray.forEach(function(val) {
+            if (val) {
+                val.el.removeEventListener(val.eventName, val.callback);
+            }
+        });
+    }
+    /*
+        Resize event:
+        On resize, need to:
+            re-calculate row-size (which may change if responsive breakpoint options are used)
+            update item position; 
+            update item size; 
+    */
+    function resizeEvent(event) {
+        // removeActiveItem();
+        setRowSize();
+        setItemPosition();
+        setItemSize();
+    }
+    /*
+        MouseEnter
+    */
     function mouseenterEvent(event) {
+        // add mouseenter class
         event.target.classList.add("carousel-mouseenter");
+        // set timeout for slight delay before removing/adding active items; recheck if mouseenter class is still present (which is removed on mouseleave);
         window.setTimeout(function() {
             if (event.target.classList.contains("carousel-mouseenter")) {
                 setActiveItem(event.target);
             }
         }, 150);
     }
+    /*
+        Mouseleave: 
+    */
     function mouseleaveEvent(event) {
+        // remove mouseenter class, if present
         if (event.target.classList.contains("carousel-mouseenter")) {
             event.target.classList.remove("carousel-mouseenter");
         }
+        // add delay before removal; similar delay is used for mouseenter
         window.setTimeout(function() {
             if (!event.target.classList.contains("carousel-mouseenter")) {
                 removeActiveItem(event.target);
             }
         }, 150);
     }
-
-    function removeEventListners() {
-        Array.prototype.forEach.call(elListItems, function(el, index) {
-            // mouseenter
-            el.removeEventListener("mouseenter", mouseenterEvent);
-            // mouseleave
-            el.removeEventListener("mouseleave", mouseleaveEvent);
-        });
-        window.removeEventListener("resize", resizeEvent);
-    }
-
+    /*
+        Initialize Event Listeners
+    */
     function initEventListeners() {
         Array.prototype.forEach.call(elListItems, function(el, index) {
             // mouseenter
-            el.addEventListener("mouseenter", mouseenterEvent);
+            addEventListener(el, "mouseenter", mouseenterEvent);
             // mouseleave
-            el.addEventListener("mouseleave", mouseleaveEvent);
+            addEventListener(el, "mouseleave", mouseleaveEvent);
         });
         // resize
-        window.removeEventListener("resize", resizeEvent);
         window.addEventListener("resize", resizeEvent);
+        window.addEventListener("orientationchange", resizeEvent);
     }
-
-    // unhide carousel; carousel can be hidden to prevent flickering before sizes are set
+    /**
+     * Show carousel:
+     * necessary because user can optionally hide before initialized to avoid flickering of wrong size, etc...
+     */
     function showCarousel() {
         if (elListCarousel) {
             Array.prototype.forEach.call(elListCarousel, function(el, index) {
@@ -282,31 +343,67 @@ function carousel(options) {
             });
         }
     }
-
-    // init carousel
-    function initCarousel() {
-        initItems();
-        setSize();
-        setPosition();
-        initEventListeners();
-        showCarousel();
+    /**
+     * Remove carousel:
+     * completely remove carousel
+     */
+    function removeCarousel() {
+        updateSelectors();
+        Array.prototype.forEach.call(elListCarousel, function(el, index) {
+            el.parentNode.removeChild(el);
+        });
     }
 
-    initCarousel();
+    return {
+        initialize: function() {
+            setRowSize();
+            setItemPosition();
+            setItemSize();
+            initEventListeners();
+            showCarousel();
+        },
+        reInitialize: function(getOptions) {
+            if (getOptions) {
+                options = getOptions;
+                removeAllEventListeners();
+                updateSelectors();
+                this.initialize();
+            }
+        },
+        refresh: function() {
+            updateSelectors();
+            this.initialize();
+        },
+
+        /**
+         * @todo 
+            - add slide-to prev/next item
+            - add slide-to prev/next row
+            - 
+         */
+
+        removeEvents: function() {
+            removeAllEventListeners();
+        },
+        remove: function() {
+            this.removeEvents();
+            removeCarousel();
+        }
+    };
 }
 
 document.addEventListener("DOMContentLoaded", function(event) {
-    carousel({
+    var carousel = new Carousel({
         selector: ".car",
         rowSize: 5,
         responsive: [
             {
-                breakpoint: 0,
-                items: 2
-            },
-            {
                 breakpoint: 768,
                 items: 3
+            },
+            {
+                breakpoint: 0,
+                items: 2
             },
             {
                 breakpoint: 992,
@@ -314,4 +411,6 @@ document.addEventListener("DOMContentLoaded", function(event) {
             }
         ]
     });
+    carousel.initialize();
+    console.log(carousel);
 });
