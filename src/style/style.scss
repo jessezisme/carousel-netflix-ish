@@ -1,4 +1,4 @@
-$transformScale: 1.5;
+$transformScale: 1.55;
 $slideNum: (($transformScale - 1) / 2) * 100;
 $slideNumPercent: unquote($slideNum + "%");
 $slideNumDoublePercent: unquote(($slideNum * 2) + "%");

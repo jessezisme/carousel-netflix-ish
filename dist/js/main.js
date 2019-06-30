@@ -117,7 +117,10 @@ function Carousel(options) {
   var elListItems = document.querySelectorAll(carouselSelector + " .car_item");
   var elListRow = document.querySelectorAll(carouselSelector + " .car_row");
   /**
-   * Update carousel and carousel items querySelector
+   *
+   * Update selectors:
+   * reset and update all the globally-available querySelectors for carousels, rows, and items;
+   *
    */
 
   function updateSelectors() {
@@ -136,14 +139,14 @@ function Carousel(options) {
     var isResponsive = options.responsive ? true : false;
     var getRowSize;
     /*
-       If custom responsive breakpoints are set, rather than a default for all sizes:
-       there needs to be a check for viewport width, and the custom breakpoints needs to be checked               
+       If custom responsive breakpoints are set (rather than one default for all), 
+       there needs to be a check for both: viewport width, and the custom breakpoints.          
     */
 
     if (isResponsive) {
       /*
         Sort breakpoints from high to low;
-        then loop array and check if viewport width is still greater than breakpoint;
+        then loop array and check if viewport width is still greater than breakpoint, using matchMedia
         if greater than breakpoint, set default rowSize to new size
       */
       options.responsive.sort(function (a, b) {
@@ -166,7 +169,7 @@ function Carousel(options) {
   /**
    *
    * Init Row:
-   * Sets row x-position to 0 on initialization
+   * sets horizontal/x-position to 0 on init
    *
    */
 
@@ -180,8 +183,9 @@ function Carousel(options) {
   }
   /**
    *
-   * Horizontal Scroll (translateX) Position of carousel-row container:
-   * get position
+   * Get Row Position:
+   * returns row's x-position
+   * @param {elRow}: row element
    *
    */
 
@@ -192,11 +196,10 @@ function Carousel(options) {
   }
   /**
    *
-   * Horizontal Scroll (translateX) Position of carousel-row container:
-   * set position as data-attribute;
-   * also set autoprefixed translateX style tags
-   * @param {xPosition}: the horizontal position used for tracking setting translateX
-   * @param {elCarRow}: if there are multiple carousels instantiated with the same name, use this to pass in one specific row element; otherwise, all will be set
+   * Set Row position:
+   * For carousel row, set x-position as attribute for reference; also set autoprefixed translateX style tags for positioning
+   * @param {elRow}: row element
+   * @param {xPosition}: the provided x-position used to set position
    *
    */
 
@@ -216,6 +219,12 @@ function Carousel(options) {
 
     setStyle();
   }
+  /**
+   *
+   * @TODO Need to finish this
+   *
+   */
+
 
   function initItem() {
     var elItemList;
@@ -229,8 +238,8 @@ function Carousel(options) {
   }
   /*
    * Set item positioning:
-   * this is needed to determine the 1st and Last items in the active carousel row;
-   * these first/last items require different animations and affect previous/next elements positioning
+   * this sets the attribute used as reference for x-positioning (where the element begins on x-axis)
+   *
    */
 
 
@@ -248,7 +257,7 @@ function Carousel(options) {
   }
   /*
    * Set item width:
-   * based on option row size
+   * Adds style tag for width %
    */
 
 
@@ -268,27 +277,83 @@ function Carousel(options) {
       });
     }
   }
+  /**
+   *
+   * Go to:
+   * used to go next, previous, or specific item index;
+   * @param {getWhere}: pass in 'next', 'previous', or index number
+   *
+   */
 
-  function _nextItem() {
+
+  function goToItem(getWhere) {
+    /*
+        - loops through all carousels and items;
+        - converts nodelist of items to array
+        - if 'next' or 'previous'
+        -- filters arrya based on x-position
+        --- if 'next', filter by items whose x-position is greater than current position
+        --- if 'previous', filter by items whose x-position is less than; 
+        - if @parem is index number, get x-position of that index (if item exists) and go to directly             
+    */
     Array.prototype.forEach.call(elListCarousel, function (el, index) {
       var elRow = el.querySelector(".car_row");
-      var getRowPos = getRowPosition(elRow);
+      var getRowPos = parseInt(getRowPosition(elRow));
       var elItemList = el.querySelectorAll(".car_item");
-      var getItemPos;
+      var elItemArray = Array.prototype.slice.call(elItemList) || [];
+      var elItemArrayFiltered;
+      /*
+          if next, get items whose x-postion is greater than row's x-position
+      */
 
-      for (var i = 0; i < elItemList.length; i++) {
-        getItemPos = elItemList[i].getAttribute("data-carousel-item-x");
+      if (getWhere === "next") {
+        elItemArrayFiltered = elItemArray.filter(function (el, index) {
+          var getItemPos = parseInt(elItemList[index].getAttribute("data-carousel-item-x"));
 
-        if (parseInt(getItemPos) > parseInt(getRowPos)) {
-          setRowPosition(elRow, getItemPos);
-          break;
-        }
+          if (getItemPos > getRowPos) {
+            return true;
+          }
+
+          return false;
+        });
+      } else if (getWhere === "previous") {
+        /*
+            if previous, get items whose x-position is less than row's x-position 
+        */
+        elItemArrayFiltered = elItemArray.filter(function (el, index) {
+          var getItemPos = parseInt(elItemList[index].getAttribute("data-carousel-item-x"));
+
+          if (getItemPos < getRowPos) {
+            return true;
+          }
+
+          return false;
+        }); // reverse filtered list, otherise [0] index will always simply be first carousel item;
+
+        elItemArrayFiltered = elItemArrayFiltered.reverse();
+      }
+      /*
+          if next or previous, get first item's position from filtered array and go to
+      */
+
+
+      if (getWhere === "next" || getWhere === "previous") {
+        var getPosition = elItemArrayFiltered[0] && elItemArrayFiltered[0].getAttribute("data-carousel-item-x") ? elItemArrayFiltered[0].getAttribute("data-carousel-item-x") : false;
+        getPosition ? setRowPosition(elRow, getPosition) : true;
+      } else if (parseInt(getWhere)) {
+        /*
+            else, if index-position is passed, just go to that specific item's x-position; 
+            no need to use filtered-list, can use un-filtered list instead
+        */
+        var getPosition = elItemList[parseInt(getWhere)] && elItemList[parseInt(getWhere)].getAttribute("data-carousel-item-x") ? elItemList[parseInt(getWhere)].getAttribute("data-carousel-item-x") : false;
+        getPosition ? setRowPosition(elRow, getPosition) : true;
       }
     });
   }
   /**
-   *  Remove active item;
-   *  only 1 item should be active per carousel; there isn't a need to find only the active carousel; can simply target all
+   *
+   * Remove Active:
+   * remove all attributes associated with "active" status
    *
    */
 
@@ -318,12 +383,16 @@ function Carousel(options) {
    *
    */
 
+  /**
+   *
+   * Set active item:
+   *
+   *
+   */
+
 
   function setActiveItem(passThis) {
     var getThis = passThis;
-    var getNextUntil = nextUntil(getThis);
-    var getPrevUntil = getPreviousSiblings(getThis);
-    var getItemsSiblings = getSiblings(getThis);
     var getItemsAll = getSiblingsAndSelf(getThis);
     var elRow = passThis.closest(".car_row");
     var rowPosition = getRowPosition(elRow);
@@ -506,8 +575,8 @@ function Carousel(options) {
         this.initialize();
       }
     },
-    nextItem: function nextItem() {
-      _nextItem();
+    goTo: function goTo(getWhere) {
+      goToItem(getWhere);
     },
     removeEvents: function removeEvents() {
       removeAllEventListeners();
