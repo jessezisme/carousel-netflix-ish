@@ -51,7 +51,6 @@
                     <img src="/dist/img/documentary.jpg" />
                 </div>
             </div>
-
         </div>
 
         <p class="heading">Popular on Netflix</p>
@@ -78,8 +77,30 @@
                 </div>
             </div>
         </div>
-
     </body>
 
     <script src="dist/js/main.js"></script>
+
+    <script>
+        var carousel = new Carousel({
+            selector: ".car",
+            rowSize: 5,
+            responsive: [
+                {
+                    breakpoint: 0,
+                    items: 2
+                },
+                {
+                    breakpoint: 768,
+                    items: 3
+                },
+                {
+                    breakpoint: 992,
+                    items: 7
+                }
+            ]
+        });
+        carousel.initialize();
+        console.log(carousel);
+    </script>
 </html>
