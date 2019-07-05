@@ -400,8 +400,8 @@ Carousel.prototype._initEventListeners = function() {
         this
     );
     // resize
-    window.addEventListener("resize", self._resizeEvent);
-    window.addEventListener("orientationchange", self._resizeEvent);
+    self._addEventListener.call(this, window, "resize", self._resizeEvent.bind(self));
+    self._addEventListener.call(this, window, "orientationchange", self._resizeEvent.bind(self));
 };
 
 /*
@@ -428,7 +428,6 @@ Carousel.prototype._addEventListener = function(getEl, getEventName, getCallback
  *
  */
 Carousel.prototype._removeAllEventListeners = function() {
-    console.log(this.eventArray);
     var self = this;
     this.eventArray.forEach(function(val, index, array) {
         if (val) {

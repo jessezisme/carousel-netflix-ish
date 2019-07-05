@@ -444,8 +444,9 @@ Carousel.prototype._initEventListeners = function () {
     self._addEventListener.call(this, el, "mouseleave", self._mouseleaveEvent.bind(self));
   }, this); // resize
 
-  window.addEventListener("resize", self._resizeEvent);
-  window.addEventListener("orientationchange", self._resizeEvent);
+  self._addEventListener.call(this, window, "resize", self._resizeEvent.bind(self));
+
+  self._addEventListener.call(this, window, "orientationchange", self._resizeEvent.bind(self));
 };
 /*
     Add event listener: 
@@ -474,7 +475,6 @@ Carousel.prototype._addEventListener = function (getEl, getEventName, getCallbac
 
 
 Carousel.prototype._removeAllEventListeners = function () {
-  console.log(this.eventArray);
   var self = this;
   this.eventArray.forEach(function (val, index, array) {
     if (val) {
