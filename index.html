@@ -103,4 +103,25 @@
         carousel.initialize();
         console.log(carousel);
     </script>
+
+    <!-- ## Testing ## -->
+    <link rel="stylesheet" type="text/css" href="./test/mocha.css" />
+    <link rel="stylesheet" type="text/css" href="./test/mocha-custom.css" />
+    <div id="mocha"></div>
+    <script src="./test/mocha.js"></script>
+    <script src="./test/chai.js"></script>
+    <script src="https://code.jquery.com/jquery-3.4.1.js" integrity="sha256-WpOohJOqMqqyKL9FccASB9O0KwACQJpFTUBLTYOVvVU=" crossorigin="anonymous"></script>
+    <!-- mocha options -->
+    <script class="mocha-init">
+        mocha.setup("bdd");
+    </script>
+    <!-- /end mocha options -->
+    <!-- unit tests -->
+    <script src="./test/test.spec.js"></script>
+    <!-- /end unit tests  -->
+    <!-- run mocha -->
+    <script class="mocha-exec">
+        mocha.run();
+    </script>
+    <!-- ## /end testing ## -->
 </html>

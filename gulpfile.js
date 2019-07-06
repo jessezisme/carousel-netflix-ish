@@ -30,6 +30,20 @@ console.log("Environment running in Gulp: " + config.env);
 /*=====  End of config  ======*/
 
 /*=============================================
+=            Test            =
+=============================================*/
+gulp.task("test-js", function() {
+    return;
+    gulp.src(["node_modules/mocha/mocha.js", "node_modules/chai/chai.js"]).pipe(gulp.dest("./test"));
+});
+gulp.task("test-css", function() {
+    return;
+    gulp.src("node_modules/mocha/mocha.css").pipe(gulp.dest("./test"));
+});
+
+/*=====  End of Test  ======*/
+
+/*=============================================
 =            JS            =
 =============================================*/
 gulp.task("js", function() {
@@ -119,5 +133,5 @@ gulp.task("serve-watch", function() {
 /*=============================================
 =            Default            =
 =============================================*/
-gulp.task("default", gulp.series("js", "sass", "serve-watch"));
+gulp.task("default", gulp.series("js", "sass", "test-css", "test-js", "serve-watch"));
 /*=====  End of Default  ======*/
